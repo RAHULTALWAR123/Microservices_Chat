@@ -4,6 +4,7 @@ import { redisClient } from "../index.js";
 import { publishToQueue } from "../config/rabbitmq.js";
 import { User } from "../model/user.js";
 import { generateToken } from "../config/generateToken.js";
+import type { AuthRequest } from "../middleware/isAuth.js";
 
 export const loginUser = async(req:Request,res:Response) => {
     try {
@@ -81,4 +82,64 @@ export const verifyUser = async(req : Request,res : Response) => {
         console.log("error in verifying",error);
     }
     
+}
+
+export const profile = async(req : AuthRequest,res : Response) => {
+    try {
+        const user  = req.user;
+        res.json(user);
+
+    } catch (error) {
+        console.log("error in profile",error);
+    }
+}
+
+export const updateUser = async (req: AuthRequest, res: Response) => {
+    try {
+        const user  = await User.findById(req.user._id);
+        
+        if(!user){
+            return res.status(404).json("user not found");
+        }
+
+        user.name = req.body.name;
+
+        await user.save();
+        const token = generateToken(user);
+
+        res.status(200).json({
+            message : "user updated",
+            user,
+            token
+        })
+
+
+    } catch (error) {
+        console.log("error updating user", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+
+export const getAllUsers = async (req: Request, res: Response) => {
+    try {
+        const users = await User.find()
+
+        res.status(200).json({ users });
+
+    } catch (error) {
+        console.log("error getting all users", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const getAUser = async(req : Request,res : Response) => {
+    try {
+        const user  = await User.findById(req.params.id);
+        res.status(200).json({ user })
+        
+    } catch (error) {
+         console.log("error getting a user", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
 }
