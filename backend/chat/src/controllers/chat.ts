@@ -98,3 +98,55 @@ export const getAllChats = async(req : AuthRequest,res : Response) => {
     }
 }
 
+export const sendMessage = async(req: AuthRequest,res : Response) => {
+    try {
+        const senderId = req.user?._id;
+        const {text,chatId} = req.body;
+
+        if(!senderId){
+            return res.status(404).json({message : "sender not found"});
+        }
+
+        if(!chatId){
+            return res.status(404).json({message : "chatId not found"});
+        }
+
+        if(!text){
+            return res.status(400).json({message :"plz enter some text"});
+        }
+
+        const chat = await Chat.findById(chatId);
+        const userExists = chat?.users.some((userId) => userId.toString() === senderId.toString());
+
+        if(!userExists){
+            return res.status(400).json({message : "current user not present in chat"});
+        }
+
+        let messageData : any = {
+            chatId: chatId,
+            sender : senderId,
+            seen:false,
+            seenAt : undefined,
+            text : text,
+            messageType : "text"
+        }
+
+        const newMessage = new Messages(messageData);
+        const saved = await newMessage.save();
+
+        await Chat.findByIdAndUpdate(chatId,{
+            lastMessagge :{
+                text:text,
+                sender: senderId
+            },
+            updatedAt : new Date()
+        },{new : true})
+
+        res.status(201).json({
+            message : saved,
+            sender : senderId
+        })
+    } catch (error) {
+        console.log("Error in sending messages:", error);
+    }
+}
