@@ -38,12 +38,12 @@ export const loginUser = async(req:Request,res:Response) => {
         }
 
         await publishToQueue("send-otp",message);
-        res.status(200).json({
+        res.status(200).json({ 
             message: "otp sent to your email"
         })
 
         
-    } catch (error) {
+    } catch (error) { 
         console.log("error in login",error);
     }
 }
