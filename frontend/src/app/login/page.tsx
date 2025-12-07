@@ -1,31 +1,37 @@
-// import React from 'react'
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client"
 
 import { useUserStore } from "@/stores/useUserStore";
 import { ArrowRight, Loader, Mail, Sparkles } from "lucide-react"
-import { useRouter } from "next/navigation";
-// import { useState } from "react"
+import { redirect, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
+
 
 function Page() {
 
-    // const [email, setEmail] = useState<string>("");
-    
-
 const router = useRouter();
-const { login, loading , email ,setEmail } = useUserStore();
+const { login, loading , email ,setEmail,profile,isAuth } = useUserStore();
 
 const handleSubmit = async (e: React.FormEvent<HTMLElement>) => {
   e.preventDefault();
 
   try {
     await login(email);
-    alert("otp sent to your mail");
-    
+    toast.success("otp sent to your mail");
     router.push(`/verify?email=${email}`);
   } catch (error) {
     console.log("error", error);
   }
 };
+
+
+useEffect(() => {
+  profile();
+},[])
+
+if(isAuth) redirect("/chat");
+
 
 
   return (

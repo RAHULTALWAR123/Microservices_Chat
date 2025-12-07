@@ -31,6 +31,7 @@ export const loginUser = async(req:Request,res:Response) => {
             EX:60
         })
 
+        
         const message = {
             to: email,
             subject: "Your otp code",
@@ -88,7 +89,7 @@ export const profile = async(req : AuthRequest,res : Response) => {
     try {
         const user  = req.user;
         res.json(user);
-
+  
     } catch (error) {
         console.log("error in profile",error);
     }

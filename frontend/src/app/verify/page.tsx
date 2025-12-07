@@ -1,9 +1,11 @@
 "use client"
 import { useUserStore } from '@/stores/useUserStore'
 import { ArrowRight, Mail, Sparkles } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { redirect, useRouter, useSearchParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 import { CgPassword } from 'react-icons/cg'
+import Cookies from 'js-cookie'
+import toast from 'react-hot-toast'
 
 function Page() {
 
@@ -11,7 +13,7 @@ function Page() {
 const params = useSearchParams();
 const email = params.get("email");
 const [otp,setOtp] = React.useState<string>("");
-const {verify} = useUserStore();
+const {verify,profile,isAuth} = useUserStore();
 
 const router = useRouter();
 
@@ -35,18 +37,34 @@ useEffect(() => {
    
 },[timer])
 
+
+
 const handleSubmit = async(e : React.FormEvent<HTMLElement>) => {
     e.preventDefault();
     console.log(otp,email);
     try { 
-        await verify(email! , otp);
-        alert("verification successful");
+        const res = await verify(email! , otp);
+        toast.success("verification successful");
+        Cookies.set("token",res.token ,{
+            expires: 7,
+            secure: false,
+            path: "/",
+            sameSite: "lax"
+        });
         router.push("/chat");
     } catch (error) {
         console.log("error", error);
     }
 
 }
+
+useEffect(() => {
+  profile();
+},[])
+
+if(isAuth) redirect("/chat");
+
+
 
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-slate-950">
